@@ -1,19 +1,19 @@
 import React from "react"
-import GolfController from "../Controllers/GolfController"
 
 export default function CourseSelector(props) {
-    const golfController = props.golfController
+    const { courses, selectedCourse, setSelectedCourse } = props
+    const courseOptions = courses
 
-    let nameOptionElements = [<option key={"default_value"} value="" disabled selected>Select golf course</option>]
+    let courseOptionList = [<option key={"default_value"} value="default_value" defaultValue={ selectedCourse ? false : true }>Select golf course</option>]
 
-    for (let i=0; i<golfController.courseOptions.length ?? 0; i++) {
-        const course = golfController.courseOptions[i]
-        nameOptionElements.push(<option key={course.id} value={course.id}>{course.name}</option>)
+    for (let i=0; i<courseOptions.length ?? 0; i++) {
+        const course = courseOptions[i]
+        courseOptionList.push(<option key={ course.id } value={ course.id } defaultValue={ selectedCourse?.id === course.id } >{ course.name }</option>)
     }
     
     return (
-        <select placeholder="Temp">
-            { nameOptionElements }
+        <select placeholder="Temp" onChange={ event => setSelectedCourse(event.target.value) }>
+            { courseOptionList }
         </select>
     )
 }

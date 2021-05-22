@@ -1,81 +1,123 @@
-import React, { useState, useReducer, useCallback, useEffect } from "react"
+import React, { useState } from "react"
+import { useQuery } from "react-query"
+
 import GolfScoreTable from "./Views/GolfScoreTable"
 import CourseSelector from "./Views/CourseSelector"
-import GolfController from './Controllers/GolfController.js'
 import * as constants from "./GlobalConstants"
 
-import './App.css';
+import './App.css'
+import Player from "./Models/Player"
 
-const GolfControllerReducerActionTypes = Object.freeze({
-  refetch: 1,
-  set: 2
-})
+function App() {
+  const [ players, setPlayersAction ] = useState([])
+  const [ selectedCourse, setSelectedCourseAction ] = useState(null)
 
-function golfControllerReducer(state, action) {
-  const payload = action.payload
+  const setPlayerName = function(id, name) {
+    if (!id || !name) return
+    
+    let playersCopy = [...players]
+    const index = playersCopy.firstIndexWhere(player => player.id.toString() === id.toString())
 
-  switch (action.type) {
-    case GolfControllerReducerActionTypes.reset:
-      return {
-        courses: []
-      }
-      break
-      case GolfControllerReducerActionTypes.set:
-        return {
-          ...state,
-          courses: [...payload]
-        }
-        break
+    if (!index) return
+
+    playersCopy[index].name = name
+
+    setPlayersAction(playersCopy)
   }
-}
 
-async function fetchCourses() {
-  try {
-    let response = await fetch(constants.baseUrl + constants.APIPaths.courses, {
+  const setPlayerScores = function(id, scores) {
+    if (!id || !scores) return
+    
+    let playersCopy = [...players]
+    const index = playersCopy.firstIndexWhere(player => player.id.toString() === id.toString())
+
+    if (!index) return
+
+    playersCopy[index].scores = scores
+
+    setPlayersAction(playersCopy)
+  }
+
+
+  function setSelectedCourse(id) {
+    if (!id) return
+
+    fetch(constants.baseUrl + constants.APIPaths.courses + "/" + id, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }).then(res => {
+      res.json().then(obj => {
+        setSelectedCourseAction(obj.data)
+      })
+    })
+  }
+
+  function addNewPlayer() {
+    let playersCopy = [...players]
+    playersCopy.push(new Player(
+      null,
+      [],
+      null
+    ))
+
+    setPlayersAction(playersCopy)
+  }
+
+  const { isLoading, data } = useQuery("fetchCourses", () => {
+    return fetch(constants.baseUrl + constants.APIPaths.courses, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
       }
     })
+    .then(res => res.json())
+  })
 
-    if (!response.ok) {
-      throw new Error("Status code was not 200! Status: " + response.status)
+  const courses = data?.courses ?? []
+
+  return isLoading ? "Loading..." : (
+    <div className="App">
+      <CourseSelector
+        courses={ courses }
+        selectedCourse={ selectedCourse }
+        setSelectedCourse={ setSelectedCourse }
+      />
+      <GolfScoreTable
+        players={ players }
+        setPlayers={ setPlayersAction }
+        setPlayerName={ setPlayerName }
+        setPlayerScores={ setPlayerScores }
+        addNewPlayer={ addNewPlayer }
+        courses={ courses }
+        selectedCourse={ selectedCourse }
+      />
+    </div>
+  )
+}
+
+Array.prototype.firstEnumerationWhere = function(callback) {
+  for (let i = 0; i < this.length; i++) {
+    const elem = this[i]
+    if (callback(elem)) {
+      return [i, elem]
     }
-
-    const val = await response.json()
-    return val
-  } catch(e) {
-    console.log(e)
-    // alert(e)
   }
 }
 
-function App() {
-  const [players, setPlayersAction] = useState([])
-  const [selectedCourse, setSelectedCourseAction] = useState(null)
-  const [courses, setCoursesAction] = useReducer(golfControllerReducer, [])
-
-  const onReloadNeeded = useCallback(async () => {
-    const jsonData = await fetchCourses();
-    console.log(jsonData.courses)
-    setCoursesAction({
-      type: GolfControllerReducerActionTypes.set,
-      payload: jsonData?.courses
-    });
-  }, []) // Args will never change, so it will only run once to fetch courses
-  
-  useEffect(() => {
-    onReloadNeeded();
-  }, [])
-
-  let golfController = new GolfController(players, setPlayersAction, courses, setCoursesAction, selectedCourse, setSelectedCourseAction)
-  
-  return (
-    <div className="App">
-      <CourseSelector golfController={golfController} />
-      <GolfScoreTable golfController={golfController} />
-    </div>
-  );
+Array.prototype.firstWhere = function(callback) {
+  const enumeration = this.firstEnumerationWhere(callback)
+  if (enumeration) {
+    return enumeration[1]
+  }
 }
 
-export default App;
+Array.prototype.firstIndexWhere = function(callback) {
+  const enumeration = this.firstEnumerationWhere(callback)
+  if (enumeration) {
+    return enumeration[0]
+  }
+}
+
+export default App

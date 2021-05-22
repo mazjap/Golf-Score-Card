@@ -1,76 +1,93 @@
-import React, { Component, useState } from "react";
-import Player from "../Models/Player"
-import GolfController from "../Controllers/GolfController.js";
-
 export default function GolfScoreTable(props) {
-    let golfController = props.golfController
+    const { 
+        players, 
+        setPlayers, 
+        addNewPlayer, 
+        setPlayerName, 
+        setPlayerScores, 
+        courses, 
+        selectedCourse 
+    } = props
 
-    golfController.addPlayer("Jordan", [1, 5, 3])
-
-    let headers = [<th className="tg-0lax">{"Name"}</th>];
-
-    for (let i=1; i<=golfController.holeCount; i++) {
-        headers.push(<th className="tg-0lax">{i ? "Hole #" + i : ""}</th>)
+    if (!selectedCourse) {
+        return "Please select a course"
     }
 
-    headers.push(<th className="tg-0lax">{"Total"}</th>)
+    let items = []
 
-    let scoresRow = []
-    let playerScores = golfController.players.map(player => {
-        scoresRow.push([<td>{player.displayName}</td>, ...player.scores.map((score, index) => <td key={index + (score != undefined ? " " + score : "")}>{score != undefined ? score : ""}</td>)])
+    let headers = [<td key={ 0 } className="tg-0lax">{ "Name" }</td>]
 
-        let items = [];
-        for (let i=0; i<golfController.corse?.holes.length ?? i; i++) {
-            items.push(<td>{player.scores[i] ?? ""}</td>)
+    for (let i = 0; i < selectedCourse.holeCount; i++) {
+        headers.push(<td key={ i + 1 } className="tg-0lax">{ "Hole #" + (i + 1) }</td>)
+    }
+
+    headers.push(<td key={ selectedCourse.holeCount + 1 } className="tg-0lax">{ "Total" }</td>)
+
+    console.log(headers.length)
+
+    items.push(<thead key={ "header" }><tr>{ headers }</tr></thead>)
+
+    const PlayerComponent = props => {
+        const { player } = props
+        const { displayName, id, scores} = player
+
+        let components = [
+            <td key={ -1 }>
+                <input 
+                type="text" 
+                name="Name" 
+                onBlur={
+                    event => {
+                        const newName = event.target.value
+                        if (newName) {
+                            console.log(newName)
+                            setPlayerName(id, newName)
+                        }
+                    }
+                } 
+                defaultValue={ displayName }
+                />
+            </td>
+        ]
+
+        for (let i=0; i<selectedCourse.holeCount; i++) {
+            components.push(
+                <td key={ i }>
+                    <input
+                    type="text"
+                    name={ "Hole #" + (i + 1) }
+                    onBlur={
+                        event => {
+                            console.log("Hit hole value change")
+                            const newValue = Number(event.target.value)
+                            if (newValue) {
+                                let scoresCopy = [...scores]
+                                scoresCopy[i] = newValue
+                                setPlayerScores(id, scoresCopy)
+                            }
+                        }
+                    }
+                    defaultValue={ scores[i] ?? 0 }
+                    />
+                </td>
+            )
         }
 
-        return <tr>{items}</tr>
-    })
+        components.push(<td key={ selectedCourse.holeCount }>{ player.getTotal() }</td>)
+
+        return <tr key={ id }>{ components }</tr>
+    }
+
+    const playerComponents = players.map(player => <PlayerComponent key={ player.id } player={ player } />)
+    items.push(<tbody key="body">{ playerComponents }</tbody>)
     
     return (
-        <table className="tg">
-            <thead>
-                <tr>
-                    { headers }
-                </tr>
-            </thead>
-            <tbody>
-                { playerScores }
-            </tbody>
-        </table>
+        <div>
+            <table className="course-table">
+                { items }
+            </table>
+
+            <button onClick={ addNewPlayer } >Add New Player</button>
+        </div>
     )
 }
-
-// export default class GolfScoreTable extends Component {
-//     constructor(props) {
-//         super(props);
-//         this.state = {
-//             players: [<Player displayName={"Jordan C."} holeCount={9} />],
-//         }
-//         this.game = new GolfController(this.state.players);
-//     }
-
-//     render() {
-//         let headers = [<th className={"tg-0lax"}>{"Name"}</th>];
-
-//         console.log(this.state);
-//         for (let i=1; i<=this.game.holeCount; i++) {
-//             headers.push(<th className={"tg-0lax"}>{i ? "Hole #" + i : ""}</th>);
-//         }
-
-//         headers.push(<th className={"tg-0lax"}>{"Total"}</th>)
-
-//         return (
-//             <table class="tg">
-//                 <thead>
-//                     <tr>
-//                         {headers}
-//                     </tr>
-//                 </thead>
-//                 <tbody>
-//                     {this.state.players}
-//                 </tbody>
-//             </table>
-//         );
-//     }
-// }
