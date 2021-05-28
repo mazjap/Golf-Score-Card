@@ -4,10 +4,10 @@ export default function GolfScoreTable(props) {
         addNewPlayer, 
         setPlayerName, 
         setPlayerScores,
+        removePlayerWithId,
         selectedCourse,
         selectedTeeBox,
-        displayMessageModally,
-        hideModal
+        displayMessageModally
     } = props
 
     if (!selectedCourse) {
@@ -38,8 +38,9 @@ export default function GolfScoreTable(props) {
             headers.push(<td key={ holeNumber } className="cell">{ holeMessage }</td>)
         }
 
-        headers.push(<td key={ selectedCourse.holeCount } className="cell">{ "In / Out" }</td>)
-        headers.push(<td key={ selectedCourse.holeCount + 1 } className="wide-cell cell">{ "Total" }</td>)
+        headers.push(<td key="inout" className="cell">{ "In / Out" }</td>)
+        headers.push(<td key="total" className="wide-cell cell">{ "Total" }</td>)
+        headers.push(<td key="delete" className="cell">{ "Remove Player" }</td>)
 
         return <thead key={ "header" }><tr>{ headers }</tr></thead>
     }
@@ -69,6 +70,7 @@ export default function GolfScoreTable(props) {
 
         yardage.push(<td key="inout" className="cell">{ "" + inCount + " / " + outCount }</td>)
         yardage.push(<td key="total" className="wide-cell cell">{ inCount + outCount }</td>)
+        yardage.push(<td key="delete" className="cell"></td>)
 
         return <tr key="yardage">{ yardage }</tr>
     }
@@ -109,6 +111,7 @@ export default function GolfScoreTable(props) {
 
         par.push(<td key="inout" className="cell">{ "" + inCount + " / " + outCount }</td>)
         par.push(<td key="total" className="wide-cell cell">{ inCount + outCount }</td>)
+        par.push(<td key="delete" className="cell"></td>)
 
         return <tr key="par">{ par }</tr>
     }
@@ -138,6 +141,7 @@ export default function GolfScoreTable(props) {
 
         handicap.push(<td key="inout" className="cell">{ "" + inCount + " / " + outCount }</td>)
         handicap.push(<td key="total" className="wide-cell cell">{ (inCount + outCount) ?? parTotal }</td>)
+        handicap.push(<td key="delete" className="cell"></td>)
 
         return <tr key="handicap">{ handicap }</tr>
     }
@@ -199,7 +203,7 @@ export default function GolfScoreTable(props) {
             return [inCount, outCount, total]
         }
 
-        const [inCount, outCount, total] = inOutTotal()
+        const [inCount, outCount] = inOutTotal()
 
         const setPlayerScoreAtIndex = (scoreIndex, id, score) => {
             if (isNaN(scoreIndex) || scoreIndex < 0 || !id || !score) return
@@ -230,9 +234,9 @@ export default function GolfScoreTable(props) {
                 let message;
 
                 if (total <= parTotal) {
-                    message = "Great job!"
+                    message = "Great job, " + player.displayName + "!"
                 } else {
-                    message = "Better luck next time!"
+                    message = "Better luck next time, " + player.displayName + "."
                 }
                 
                 displayMessageModally(message)
@@ -240,6 +244,8 @@ export default function GolfScoreTable(props) {
     
             setPlayerScores(id, tempScores)
         }
+
+        const removePlayer = () => removePlayerWithId(player.id)
 
         for (let i = 0; i < selectedCourse.holeCount; i++) {
             const handleEvent = event => {
@@ -278,10 +284,24 @@ export default function GolfScoreTable(props) {
             }
         }
 
-        firstRowComponents.push(<td key={ selectedCourse.holeCount } className="cell" style={ style }> { inCount }</td>)
-        secondRowComponents.push(<td key={ selectedCourse.holeCount + 1 } className="cell" style={ style }>{ outCount }</td>)
+        firstRowComponents.push(<td key="in" className="cell" style={ style }> { inCount }</td>)
+        secondRowComponents.push(<td key="out" className="cell" style={ style }>{ outCount }</td>)
 
-        firstRowComponents.push(<td key={ selectedCourse.holeCount + 2 } rowSpan="2" className="wide-cell cell" style={ style }>{ inCount + outCount }</td>)
+        firstRowComponents.push(<td key="total" rowSpan="2" className="wide-cell cell" style={ style }>{ inCount + outCount }</td>)
+        firstRowComponents.push(
+            <td key="delete" rowSpan="2" className="cell" style={ style }>
+                <button onClick={ removePlayer } style={ 
+                    {
+                        color: "white", 
+                        backgroundColor: "red",
+                        border: "none",
+                        width: "100%",
+                        height: "100%"
+                    } 
+                }>-</button>
+            </td>
+        )
+
 
         return (
             <>
