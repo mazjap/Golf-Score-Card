@@ -10,32 +10,46 @@ import Player from "./Models/Player"
 
 function App() {
   const [ players, setPlayersAction ] = useState([])
+  const [ selectedTeeBox, setSelectedTeeBox ] = useState(0)
   const [ selectedCourse, setSelectedCourseAction ] = useState(null)
+
+  const addNewPlayer = () => {
+    setPlayersAction([...players, new Player(
+      null,
+      [],
+      null
+    )])
+  }
 
   const setPlayerName = function(id, name) {
     if (!id || !name) return
-    
-    let playersCopy = [...players]
-    const index = playersCopy.firstIndexWhere(player => player.id.toString() === id.toString())
 
-    if (!index) return
+    const index = players.findIndex(player => player.id.toString() === id.toString())
+    if (index === -1) return
 
-    playersCopy[index].name = name
+    players[index].displayName = name
 
-    setPlayersAction(playersCopy)
+    setPlayersAction(players)
   }
 
   const setPlayerScores = function(id, scores) {
-    if (!id || !scores) return
-    
-    let playersCopy = [...players]
-    const index = playersCopy.firstIndexWhere(player => player.id.toString() === id.toString())
+    console.log(id)
+    console.log(scores)
+    console.log(scores.length)
 
-    if (!index) return
+    if (!id || !scores || !scores.length) return
 
-    playersCopy[index].scores = scores
+    const index = players.findIndex(player => player.id.toString() === id.toString())
 
-    setPlayersAction(playersCopy)
+    console.log(index)
+
+    if (index === -1) return
+
+    players[index].scores = scores
+
+    console.log(players[index].scores)
+
+    setPlayersAction(players)
   }
 
 
@@ -49,20 +63,10 @@ function App() {
       }
     }).then(res => {
       res.json().then(obj => {
+        console.log(obj.data)
         setSelectedCourseAction(obj.data)
       })
     })
-  }
-
-  function addNewPlayer() {
-    let playersCopy = [...players]
-    playersCopy.push(new Player(
-      null,
-      [],
-      null
-    ))
-
-    setPlayersAction(playersCopy)
   }
 
   const { isLoading, data } = useQuery("fetchCourses", () => {
@@ -84,40 +88,57 @@ function App() {
         selectedCourse={ selectedCourse }
         setSelectedCourse={ setSelectedCourse }
       />
+      <TeeBoxSelection 
+        selectedCourse={ selectedCourse }
+        selectedTeeBox={ selectedTeeBox }
+        setSelectedTeeBox={ setSelectedTeeBox }
+      />
       <GolfScoreTable
         players={ players }
         setPlayers={ setPlayersAction }
         setPlayerName={ setPlayerName }
         setPlayerScores={ setPlayerScores }
         addNewPlayer={ addNewPlayer }
-        courses={ courses }
         selectedCourse={ selectedCourse }
+        selectedTeeBox={ selectedTeeBox }
       />
     </div>
   )
 }
 
-Array.prototype.firstEnumerationWhere = function(callback) {
-  for (let i = 0; i < this.length; i++) {
-    const elem = this[i]
-    if (callback(elem)) {
-      return [i, elem]
-    }
-  }
-}
+function TeeBoxSelection(props) {
+  const { selectedCourse, selectedTeeBox, setSelectedTeeBox } = props
 
-Array.prototype.firstWhere = function(callback) {
-  const enumeration = this.firstEnumerationWhere(callback)
-  if (enumeration) {
-    return enumeration[1]
+  const setTeeBoxWithId = id => {
+    
   }
-}
 
-Array.prototype.firstIndexWhere = function(callback) {
-  const enumeration = this.firstEnumerationWhere(callback)
-  if (enumeration) {
-    return enumeration[0]
+  return (
+  <div>
+  {
+    !selectedCourse ? "Please select a course" : (
+      <select>
+      {
+        selectedCourse.holes[0].teeBoxes.map((teeBox, index) => {
+          let yardage = 0
+          for (const hole of selectedCourse.holes) {
+            yardage += hole.teeBoxes[index].yards
+          }
+
+          return (
+            <option key={ index } value={ index }>
+              {
+                teeBox.teeType.toUpperCase() + ", " + yardage + " yards"
+              }
+            </option>
+          )
+        })
+      }
+      </select>
+    )
   }
+  </div>
+  )
 }
 
 export default App

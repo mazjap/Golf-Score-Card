@@ -8,20 +8,8 @@ class Player {
         this.displayName = displayName ?? Player.generateName()
     }
 
-    getTotal() {
-        if (this.scores.length) {
-            return this.scores.reduce((acc, val) => { 
-                if (val) {
-                    return acc + val 
-                }
-            })
-        } else {
-            return 0
-        }
-    }
-
     static firstNames = ["Steve", "Dave", "Austin", "Josh", "Tyler"]
-    static lastNames = ["AwesomeDude", "Jefferson", "Washington", "Timinson", "CoolGuy"]
+    static lastNames = ["AwesomeDude", "Jefferson", "Washington", "Timinson", "GolfGuy"]
 
     static generateName() {
         const firstNamesLength = Player.firstNames.length

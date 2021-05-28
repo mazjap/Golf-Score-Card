@@ -1,7 +1,10 @@
 
 export function createUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8)
+        let r = Math.random() * 16 | 0
+        let logic = r & 0x3
+        logic = logic | 0x8
+        let v = c === 'x' ? r : logic
         return v.toString(16)
     })
 }
