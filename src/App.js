@@ -24,32 +24,27 @@ function App() {
   const setPlayerName = function(id, name) {
     if (!id || !name) return
 
-    const index = players.findIndex(player => player.id.toString() === id.toString())
+    let playersCopy = [...players]
+
+    const index = playersCopy.findIndex(player => player.id.toString() === id.toString())
     if (index === -1) return
 
-    players[index].displayName = name
+    playersCopy[index].displayName = name
 
-    setPlayersAction(players)
+    setPlayersAction(playersCopy)
   }
 
   const setPlayerScores = function(id, scores) {
-    console.log(id)
-    console.log(scores)
-    console.log(scores.length)
-
     if (!id || !scores || !scores.length) return
 
-    const index = players.findIndex(player => player.id.toString() === id.toString())
+    let playersCopy = [...players]
 
-    console.log(index)
-
+    const index = playersCopy.findIndex(player => player.id.toString() === id.toString())
     if (index === -1) return
 
-    players[index].scores = scores
+    playersCopy[index].scores = scores
 
-    console.log(players[index].scores)
-
-    setPlayersAction(players)
+    setPlayersAction(playersCopy)
   }
 
 
@@ -64,6 +59,7 @@ function App() {
     }).then(res => {
       res.json().then(obj => {
         console.log(obj.data)
+        setSelectedTeeBox(0)
         setSelectedCourseAction(obj.data)
       })
     })
@@ -82,7 +78,7 @@ function App() {
   const courses = data?.courses ?? []
 
   return isLoading ? "Loading..." : (
-    <div className="App">
+    <div id="container">
       <CourseSelector
         courses={ courses }
         selectedCourse={ selectedCourse }
@@ -109,15 +105,16 @@ function App() {
 function TeeBoxSelection(props) {
   const { selectedCourse, selectedTeeBox, setSelectedTeeBox } = props
 
-  const setTeeBoxWithId = id => {
-    
-  }
-
   return (
   <div>
   {
     !selectedCourse ? "Please select a course" : (
-      <select>
+      <select 
+      onChange={ 
+        event => {
+          setSelectedTeeBox(event.target.value)
+        }
+      }>
       {
         selectedCourse.holes[0].teeBoxes.map((teeBox, index) => {
           let yardage = 0
@@ -126,7 +123,10 @@ function TeeBoxSelection(props) {
           }
 
           return (
-            <option key={ index } value={ index }>
+            <option 
+              key={ index } 
+              value={ index } 
+              defaultValue={ index === selectedTeeBox }>
               {
                 teeBox.teeType.toUpperCase() + ", " + yardage + " yards"
               }

@@ -11,13 +11,18 @@ export default function GolfScoreTable(props) {
     const setPlayerScoreAtIndex = (scoreIndex, id, score) => {
         if (isNaN(scoreIndex) || scoreIndex < 0 || !id || !score) return
 
+        console.log("Made it past the first check")
+
         const index = players.findIndex(player => player.id.toString() === id.toString())
 
         if (index === -1) return
 
+        console.log("Gotted index ok")
+
         let tempScores = [...players[index].scores]
         tempScores[scoreIndex] = score
 
+        console.log("Calling set player scores")
         setPlayerScores(id, tempScores)
     }
 
@@ -36,36 +41,34 @@ export default function GolfScoreTable(props) {
     const holeCountHalf = Math.floor((selectedCourse.holeCount + 1) / 2)
 
     const Header = () => {
-        let headers = [<td key={ 0 } className="tg-0lax">{ "Name" }</td>]
+        let headers = [<td key={ 0 } className="wider-cell cell">{ "Name" }</td>]
 
         for (let i = 0; i < holeCountHalf; i++) {
             const holeNumber = i + 1
-
             let holeMessage = "Hole #" + holeNumber
 
             if (i !== holeCountHalf - 1 || selectedCourse.holeCount % 2 === 0) {
                 holeMessage +=  " & " + (holeNumber + holeCountHalf)
             }
 
-            headers.push(<td key={ holeNumber } className="tg-0lax">{ holeMessage }</td>)
+            headers.push(<td key={ holeNumber } className="cell">{ holeMessage }</td>)
         }
 
-        headers.push(<td key={ selectedCourse.holeCount }>{ "In & Out" }</td>)
-
-        headers.push(<td key={ selectedCourse.holeCount + 1 } className="tg-0lax">{ "Total" }</td>)
+        headers.push(<td key={ selectedCourse.holeCount } className="cell">{ "In & Out" }</td>)
+        headers.push(<td key={ selectedCourse.holeCount + 1 } className="wide-cell cell">{ "Total" }</td>)
 
         return <thead key={ "header" }><tr>{ headers }</tr></thead>
     }
 
     const Yardage = () => {
-        let yardage = [<td key="title">Yardage</td>]
+        let yardage = [<td key="title" className="wider-cell cell">Yardage</td>]
         let inCount = 0
         let outCount = 0
 
         for (let i = 0; i < holeCountHalf; i++) {
             const hole = selectedCourse.holes[i]
             const doubledHole = selectedCourse.holes[i + holeCountHalf]
-            const holesYards =  hole.teeBoxes[selectedTeeBox].yards
+            const holesYards =  hole.teeBoxes[selectedTeeBox]?.yards ?? 0
             let message = "" + holesYards
             inCount += holesYards
 
@@ -76,18 +79,18 @@ export default function GolfScoreTable(props) {
             }
 
             yardage.push(
-                <td key={ hole.courseHoleId }>{ message }</td>
+                <td key={ hole.courseHoleId } className="cell">{ message }</td>
             )
         }
 
-        yardage.push(<td key="inout">{ "" + inCount + " & " + outCount }</td>)
-        yardage.push(<td key="total">{ inCount + outCount }</td>)
+        yardage.push(<td key="inout" className="cell">{ "" + inCount + " & " + outCount }</td>)
+        yardage.push(<td key="total" className="wide-cell cell">{ inCount + outCount }</td>)
 
         return <tr key="yardage">{ yardage }</tr>
     }
 
     const Par = () => {
-        let par = [<td key="title">Par</td>]
+        let par = [<td key="title" className="wide-cell cell">Par</td>]
         let inCount = 0
         let outCount = 0
 
@@ -105,18 +108,18 @@ export default function GolfScoreTable(props) {
             }
 
             par.push(
-                <td key={ hole.courseHoleId }>{ message }</td>
+                <td key={ hole.courseHoleId } className="cell">{ message }</td>
             )
         }
 
-        par.push(<td key="inout">{ "" + inCount + " & " + outCount }</td>)
-        par.push(<td key="total">{ inCount + outCount }</td>)
+        par.push(<td key="inout" className="cell">{ "" + inCount + " & " + outCount }</td>)
+        par.push(<td key="total" className="wide-cell cell">{ inCount + outCount }</td>)
 
         return <tr key="par">{ par }</tr>
     }
 
     const Handicap = () => {
-        let handicap = [<td key="title">Handicap</td>]
+        let handicap = [<td key="title" className="wide-cell cell">Handicap</td>]
         let inCount = 0
         let outCount = 0
 
@@ -134,12 +137,12 @@ export default function GolfScoreTable(props) {
             }
 
             handicap.push(
-                <td key={ hole.courseHoleId }>{ message }</td>
+                <td key={ hole.courseHoleId } className="cell">{ message }</td>
             )
         }
 
-        handicap.push(<td key="inout">{ "" + inCount + " & " + outCount }</td>)
-        handicap.push(<td key="total">{ inCount + outCount }</td>)
+        handicap.push(<td key="inout" className="cell">{ "" + inCount + " & " + outCount }</td>)
+        handicap.push(<td key="total" className="wide-cell cell">{ inCount + outCount }</td>)
 
         return <tr key="handicap">{ handicap }</tr>
     }
@@ -148,11 +151,24 @@ export default function GolfScoreTable(props) {
         const { player } = props
         const { displayName, id, scores} = player
 
+        let hash = 0
+        for (let i = 0; i < player.displayName.length; i++) {
+            hash = player.displayName.charCodeAt(i) + ((hash << 5) - hash)
+        }
+
+        const c = (hash & 0x00FFFFFF).toString(16).toUpperCase()
+        const color = "00000".substring(0, 6 - c.length) + c
+        console.log(color)
+        const style = {
+            backgroundColor: "#" + color
+        }
+
         let firstRowComponents = [
-            <td key={ -1 } rowSpan="2">
+            <td key={ -1 } rowSpan="2" className="wide-cell cell">
                 <input 
                 type="text" 
                 name="Name"
+                style={ style }
                 onBlur={
                     event => {
                         const newName = event.target.value
@@ -180,22 +196,24 @@ export default function GolfScoreTable(props) {
             if (i < holeCountHalf) {
                 const defVal = scores[i]
                 firstRowComponents.push(
-                    <td key={ i }>
+                    <td key={ i } className="cell">
                         <input
                         type="text"
                         name={ "Hole #" + holeNumber }
                         onBlur={ handleEvent }
+                        style={ style }
                         defaultValue={ (!defVal || isNaN(defVal)) ? 0 : defVal }
                         />
                     </td>
                 )
             } else {
                 secondRowComponents.push(
-                    <td key={ i }>
+                    <td key={ i } className="cell">
                         <input
                         type="text"
                         name={ "Hole #" + holeNumber }
                         onBlur={ handleEvent }
+                        style={ style }
                         defaultValue={ scores[i] ?? 0 }
                         />
                     </td>
@@ -217,22 +235,24 @@ export default function GolfScoreTable(props) {
             outCount += num && !isNaN(num) ? num : 0
         }
 
-        firstRowComponents.push(<td key={ selectedCourse.holeCount }>{ inCount }</td>)
+        firstRowComponents.push(<td key={ selectedCourse.holeCount } className="cell" style={ style }> { inCount }</td>)
 
-        secondRowComponents.push(<td key={ selectedCourse.holeCount + 1 }>{ outCount }</td>)
+        secondRowComponents.push(<td key={ selectedCourse.holeCount + 1 } className="cell" style={ style }>{ outCount }</td>)
 
-        firstRowComponents.push(<td key={ selectedCourse.holeCount + 2 } rowSpan="2" >{ inCount + outCount }</td>)
+        firstRowComponents.push(<td key={ selectedCourse.holeCount + 2 } rowSpan="2" className="wide-cell cell" style={ style }>{ inCount + outCount }</td>)
 
         return (
             <>
                 <tr key={ id }>{ firstRowComponents }</tr>
-                <tr key={ id + "1" }>{ secondRowComponents }</tr>
+                <tr className="person" key={ id + "1" }>{ secondRowComponents }</tr>
             </>
         )
     }
+
+    console.log(players)
     
     return (
-        <div>
+        <div id="table-container">
             <table className="course-table">
                 { 
                     [
@@ -253,7 +273,7 @@ export default function GolfScoreTable(props) {
                 }
             </table>
 
-            <button onClick={ addNewPlayer } >Add New Player</button>
+            <button onClick={ addNewPlayer } id="new-player-button">Add New Player</button>
         </div>
     )
 }
