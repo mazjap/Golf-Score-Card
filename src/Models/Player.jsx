@@ -8,7 +8,7 @@ class Player {
         this.displayName = displayName ?? Player.generateName()
     }
 
-    static firstNames = ["Steve", "Dave", "Austin", "Josh", "Tyler", "Sam", "Tony", "Phil", "Jessica"]
+    static firstNames = ["Liam", "Noah", "Oliver", "Elijah", "William", "James", "Benjamin", "Lucas", "Steve", "Dave", "Austin", "Josh", "Tyler", "Sam", "Tony", "Phil", "Jessica"]
     static lastNames = ["AwesomeDude", "Jefferson", "Washington", "Timinson", "GolfGuy", "Smith", "Chase"]
 
     static generateName() {

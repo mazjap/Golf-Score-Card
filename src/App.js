@@ -8,11 +8,11 @@ import * as constants from "./GlobalConstants"
 import './App.css'
 import Player from "./Models/Player"
 
-function useOutsideTapAlert(ref, action) {
+function useOutsideTapAlert(ref, callback) {
   useEffect(() => {
       function handleClickOutside(event) {
           if (ref.current && !ref.current.contains(event.target)) {
-              action()
+            callback()
           }
       }
 
@@ -20,7 +20,7 @@ function useOutsideTapAlert(ref, action) {
       return () => {
           document.removeEventListener("mousedown", handleClickOutside)
       }
-  }, [ref])
+  }, [ref, callback])
 }
 
 function OutsideAlerter(props) {
