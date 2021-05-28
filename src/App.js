@@ -9,9 +9,22 @@ import './App.css'
 import Player from "./Models/Player"
 
 function App() {
+  const [ modalMessage, setModalMessage ] = useState(null)
   const [ players, setPlayersAction ] = useState([])
   const [ selectedTeeBox, setSelectedTeeBox ] = useState(0)
   const [ selectedCourse, setSelectedCourseAction ] = useState(null)
+
+  const { isLoading, data } = useQuery("fetchCourses", () => {
+    return fetch(constants.baseUrl + constants.APIPaths.courses, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .then(res => res.json())
+  })
+
+  if (isLoading) return "Loading..."
 
   const addNewPlayer = () => {
     setPlayersAction([...players, new Player(
@@ -48,7 +61,7 @@ function App() {
   }
 
 
-  function setSelectedCourse(id) {
+  const setSelectedCourse = id => {
     if (!id) return
 
     fetch(constants.baseUrl + constants.APIPaths.courses + "/" + id, {
@@ -65,22 +78,14 @@ function App() {
     })
   }
 
-  const { isLoading, data } = useQuery("fetchCourses", () => {
-    return fetch(constants.baseUrl + constants.APIPaths.courses, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-    .then(res => res.json())
-  })
+  const displayMessageModally = message => setModalMessage(message)
+  const hideModal = () => setModalMessage(null)
 
-  const courses = data?.courses ?? []
-
-  return isLoading ? "Loading..." : (
+  console.log("Modal Message: " + modalMessage)
+  return (
     <div id="container">
       <CourseSelector
-        courses={ courses }
+        courses={ data?.courses ?? [] }
         selectedCourse={ selectedCourse }
         setSelectedCourse={ setSelectedCourse }
       />
@@ -97,7 +102,19 @@ function App() {
         addNewPlayer={ addNewPlayer }
         selectedCourse={ selectedCourse }
         selectedTeeBox={ selectedTeeBox }
+        displayMessageModally={ displayMessageModally }
+        hideModal={ hideModal }
       />
+      {
+        !modalMessage ? "" : (
+          <div id="modal">
+            <div id="modal-content">
+
+              { modalMessage }
+            </div>
+          </div>
+        )
+      }
     </div>
   )
 }
