@@ -81,7 +81,8 @@ function App() {
   }
 
   const setPlayerName = function(id, name) {
-    if (!id || !name) return
+    console.log(includes(players, player => player.name === name))
+    if (!id || !name || includes(players, player => player.displayName === name)) return
 
     let playersCopy = [...players]
 
@@ -213,3 +214,13 @@ function TeeBoxSelection(props) {
 }
 
 export default App
+
+function includes(array, callback) {
+  for (const elem of array) {
+    if (callback(elem)) {
+      return true
+    }
+  }
+
+  return false
+}
